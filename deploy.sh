@@ -18,25 +18,43 @@ echo "========================================================================="
 echo "GCP PROJECT ID: $PROJECT_ID"
 echo "========================================================================="
 
-# 2. Grant datastore.user role to the Default Compute Service Account
+# 2. Enable required APIs
+echo "Enabling required Google Cloud APIs..."
+gcloud services enable \
+  run.googleapis.com \
+  cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com \
+  datastore.googleapis.com \
+  storage.googleapis.com \
+  --quiet || true
+
+# 3. Grant necessary IAM roles to the Default Compute Service Account
 echo "Fetching project number..."
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format="value(projectNumber)" 2>/dev/null || true)
 
 if [ -n "$PROJECT_NUMBER" ]; then
   SERVICE_ACCOUNT="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
   echo "Default Compute Service Account: $SERVICE_ACCOUNT"
-  echo "Adding Datastore User role to the service account..."
+  echo "Adding required roles to the service account..."
   
-  # Try to add role. If IAM permissions are lacking, warn but don't fail deploy.
-  if gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-      --member="serviceAccount:$SERVICE_ACCOUNT" \
-      --role="roles/datastore.user" \
-      --quiet >/dev/null 2>&1; then
-    echo "SUCCESS: 'roles/datastore.user' granted to $SERVICE_ACCOUNT."
-  else
-    echo "WARNING: Could not automatically grant 'roles/datastore.user' to $SERVICE_ACCOUNT."
-    echo "If your deploy fails with permission errors, please ensure this service account has Datastore permissions."
-  fi
+  ROLES=(
+    "roles/datastore.user"
+    "roles/storage.objectAdmin"
+    "roles/logging.logWriter"
+    "roles/artifactregistry.writer"
+  )
+  
+  for ROLE in "${ROLES[@]}"; do
+    # Try to add role. If IAM permissions are lacking, warn but don't fail script.
+    if gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+        --member="serviceAccount:$SERVICE_ACCOUNT" \
+        --role="$ROLE" \
+        --quiet >/dev/null 2>&1; then
+      echo "  SUCCESS: '$ROLE' granted to $SERVICE_ACCOUNT."
+    else
+      echo "  WARNING: Could not automatically grant '$ROLE' to $SERVICE_ACCOUNT."
+    fi
+  done
 else
   echo "WARNING: Could not fetch project number. Skipping automatic IAM policy binding."
 fi

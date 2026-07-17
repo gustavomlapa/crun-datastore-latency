@@ -3,6 +3,10 @@ import time
 # 1. Record the absolute start time of the Python interpreter
 app_start_time = time.time()
 
+# Log the absolute first possible instruction timestamp
+first_execution_dt = datetime.utcfromtimestamp(app_start_time).isoformat() + "Z"
+print(f"Container Python started! First execution datetime: {first_execution_dt}", flush=True)
+
 # Perform all necessary imports using standard library only (no external dependencies)
 import json
 import os
@@ -50,15 +54,25 @@ project_id = get_project_id()
 app_init_ready_time = time.time()
 app_initialization_ms = round((app_init_ready_time - app_start_time) * 1000, 2)
 
+app_init_ready_dt = datetime.utcfromtimestamp(app_init_ready_time).isoformat() + "Z"
+print(f"Container Datastore-Lib started! Initialization datetime: {app_init_ready_dt}", flush=True)
+
 print(f"Container Datastore-REST started! Project ID: {project_id}. Initialization completed in {app_initialization_ms} ms.", flush=True)
 
 # WSGI application callable for gunicorn
 def app(environ, start_response):
     # 2. Record database request start timestamp
     db_request_start_timestamp = time.time()
+
+    db_request_start_dt = datetime.utcfromtimestamp(db_request_start_timestamp).isoformat() + "Z"
+    print(f"Container Python started! First execution datetime: {db_request_start_dt}", flush=True)
     
     if not project_id:
         db_request_end_timestamp = time.time()
+
+        db_request_end_dt = datetime.utcfromtimestamp(db_request_end_timestamp).isoformat() + "Z"
+        print(f"Container Python started! First execution datetime: {db_request_end_dt}", flush=True)
+        
         status_code = '500 Internal Server Error'
         response_data = {
             "status": "error",

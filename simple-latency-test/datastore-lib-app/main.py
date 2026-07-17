@@ -1,7 +1,13 @@
 import time
+from datetime import datetime
 
 # 1. Record the absolute start time of the Python interpreter
 app_start_time = time.time()
+
+# Log the absolute first possible instruction timestamp
+first_execution_dt = datetime.utcfromtimestamp(app_start_time).isoformat() + "Z"
+print(f"Container Python started! First execution datetime: {first_execution_dt}", flush=True)
+
 
 # Perform all necessary imports and library loading
 from google.cloud import datastore
@@ -15,6 +21,9 @@ client = datastore.Client(database="datastore-id1")
 app_init_ready_time = time.time()
 app_initialization_ms = round((app_init_ready_time - app_start_time) * 1000, 2)
 
+app_init_ready_dt = datetime.utcfromtimestamp(app_init_ready_time).isoformat() + "Z"
+print(f"Container Datastore-Lib started! Initialization datetime: {app_init_ready_dt}", flush=True)
+
 print(f"Container Datastore-Lib started! Initialization completed in {app_initialization_ms} ms.", flush=True)
 
 # WSGI application callable for gunicorn
@@ -24,10 +33,16 @@ def app(environ, start_response):
     
     # 2. Record database request start timestamp
     db_request_start_timestamp = time.time()
+
+    db_request_start_dt = datetime.utcfromtimestamp(db_request_start_timestamp).isoformat() + "Z"
+    print(f"Container Python started! First execution datetime: {db_request_start_dt}", flush=True)
     
     try:
         entity = client.get(key)
         db_request_end_timestamp = time.time()
+
+        db_request_end_dt = datetime.utcfromtimestamp(db_request_end_timestamp).isoformat() + "Z"
+        print(f"Container Python started! First execution datetime: {db_request_end_dt}", flush=True)
         
         if entity:
             message = entity.get("message", "No message property found")
