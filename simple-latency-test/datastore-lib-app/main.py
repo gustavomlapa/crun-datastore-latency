@@ -35,14 +35,14 @@ def app(environ, start_response):
     db_request_start_timestamp = time.time()
 
     db_request_start_dt = datetime.utcfromtimestamp(db_request_start_timestamp).isoformat() + "Z"
-    print(f"Container Python started! First execution datetime: {db_request_start_dt}", flush=True)
+    print(f"DB request started! datetime: {db_request_start_dt}", flush=True)
     
     try:
         entity = client.get(key)
         db_request_end_timestamp = time.time()
 
         db_request_end_dt = datetime.utcfromtimestamp(db_request_end_timestamp).isoformat() + "Z"
-        print(f"Container Python started! First execution datetime: {db_request_end_dt}", flush=True)
+        print(f"DB request completed! datetime: {db_request_end_dt}", flush=True)
         
         if entity:
             message = entity.get("message", "No message property found")

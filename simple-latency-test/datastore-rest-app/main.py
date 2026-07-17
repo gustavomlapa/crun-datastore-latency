@@ -66,13 +66,13 @@ def app(environ, start_response):
     db_request_start_timestamp = time.time()
 
     db_request_start_dt = datetime.utcfromtimestamp(db_request_start_timestamp).isoformat() + "Z"
-    print(f"Container Python started! First execution datetime: {db_request_start_dt}", flush=True)
+    print(f"DB request started! datetime: {db_request_start_dt}", flush=True)
     
     if not project_id:
         db_request_end_timestamp = time.time()
 
         db_request_end_dt = datetime.utcfromtimestamp(db_request_end_timestamp).isoformat() + "Z"
-        print(f"Container Python started! First execution datetime: {db_request_end_dt}", flush=True)
+        print(f"DB request completed! datetime: {db_request_end_dt}", flush=True)
 
         status_code = '500 Internal Server Error'
         response_data = {
@@ -103,10 +103,11 @@ def app(environ, start_response):
                 }
             }
         else:
-            url = f"https://datastore.googleapis.com/v1/projects/{project_id}/databases/datastore-id1:lookup"
+            url = f"https://datastore.googleapis.com/v1/projects/{project_id}:lookup"
             
             # Construct JSON request body for Datastore lookup API
             payload = {
+                "databaseId": "datastore-id1",
                 "keys": [
                     {
                         "partitionId": {
