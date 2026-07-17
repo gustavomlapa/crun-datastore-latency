@@ -56,7 +56,7 @@ app_init_ready_time = time.time()
 app_initialization_ms = round((app_init_ready_time - app_start_time) * 1000, 2)
 
 app_init_ready_dt = datetime.utcfromtimestamp(app_init_ready_time).isoformat() + "Z"
-print(f"Container Datastore-Lib started! Initialization datetime: {app_init_ready_dt}", flush=True)
+print(f"Container Datastore-REST After-Initialization datetime: {app_init_ready_dt}", flush=True)
 
 print(f"Container Datastore-REST started! Project ID: {project_id}. Initialization completed in {app_initialization_ms} ms.", flush=True)
 
@@ -128,6 +128,7 @@ def app(environ, start_response):
             req = urllib.request.Request(url, data=data, method="POST")
             req.add_header("Authorization", f"Bearer {token}")
             req.add_header("Content-Type", "application/json")
+            req.add_header("x-goog-request-params", f"project_id={project_id}&database_id=datastore-id1")
             
             try:
                 with urllib.request.urlopen(req, timeout=5) as response:
