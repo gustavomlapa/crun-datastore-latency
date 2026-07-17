@@ -26,6 +26,15 @@ print(f"Container Datastore-Lib started! Initialization datetime: {app_init_read
 
 print(f"Container Datastore-Lib started! Initialization completed in {app_initialization_ms} ms.", flush=True)
 
+# Perform a warm-up query to the database during startup (after initialization logs)
+print("Performing startup database warm-up query...", flush=True)
+try:
+    warmup_key = client.key("LatencyTest", "test-entity")
+    _ = client.get(warmup_key)
+    print("Startup database warm-up query completed successfully!", flush=True)
+except Exception as e:
+    print(f"Startup database warm-up query failed: {e}", flush=True)
+
 # WSGI application callable for gunicorn
 def app(environ, start_response):
     # Retrieve the entity key

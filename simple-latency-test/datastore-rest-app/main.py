@@ -56,9 +56,47 @@ app_init_ready_time = time.time()
 app_initialization_ms = round((app_init_ready_time - app_start_time) * 1000, 2)
 
 app_init_ready_dt = datetime.utcfromtimestamp(app_init_ready_time).isoformat() + "Z"
-print(f"Container Datastore-REST After-Initialization datetime: {app_init_ready_dt}", flush=True)
+print(f"Container Datastore-REST started! Initialization datetime: {app_init_ready_dt}", flush=True)
 
 print(f"Container Datastore-REST started! Project ID: {project_id}. Initialization completed in {app_initialization_ms} ms.", flush=True)
+
+# Perform a warm-up query to the database during startup for REST app (after initialization logs)
+if project_id:
+    print("Performing startup database warm-up query via REST...", flush=True)
+    try:
+        token = get_access_token()
+        if token:
+            url = f"https://datastore.googleapis.com/v1/projects/{project_id}:lookup"
+            payload = {
+                "databaseId": "datastore-id1",
+                "keys": [
+                    {
+                        "partitionId": {
+                            "projectId": project_id,
+                            "databaseId": "datastore-id1"
+                        },
+                        "path": [
+                          {
+                            "kind": "LatencyTest",
+                            "name": "test-entity"
+                          }
+                        ]
+                    }
+                ]
+            }
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(url, data=data, method="POST")
+            req.add_header("Authorization", f"Bearer {token}")
+            req.add_header("Content-Type", "application/json")
+            req.add_header("x-goog-request-params", f"project_id={project_id}&database_id=datastore-id1")
+            
+            with urllib.request.urlopen(req, timeout=5) as response:
+                _ = response.read()
+                print("Startup database warm-up query via REST completed successfully!", flush=True)
+        else:
+            print("Startup database warm-up query via REST skipped: No access token.", flush=True)
+    except Exception as e:
+        print(f"Startup database warm-up query via REST failed: {e}", flush=True)
 
 # WSGI application callable for gunicorn
 def app(environ, start_response):
@@ -70,10 +108,6 @@ def app(environ, start_response):
     
     if not project_id:
         db_request_end_timestamp = time.time()
-
-        db_request_end_dt = datetime.utcfromtimestamp(db_request_end_timestamp).isoformat() + "Z"
-        print(f"DB request completed! datetime: {db_request_end_dt}", flush=True)
-
         status_code = '500 Internal Server Error'
         response_data = {
             "status": "error",
@@ -187,6 +221,9 @@ def app(environ, start_response):
                         "db_request_duration_ms": round((db_request_end_timestamp - db_request_start_timestamp) * 1000, 2)
                     }
                 }
+
+    db_request_end_dt = datetime.utcfromtimestamp(db_request_end_timestamp).isoformat() + "Z"
+    print(f"DB request completed! datetime: {db_request_end_dt}", flush=True)
 
     body = json.dumps(response_data).encode('utf-8')
     
