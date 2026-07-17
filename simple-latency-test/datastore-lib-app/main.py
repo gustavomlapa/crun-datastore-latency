@@ -30,7 +30,17 @@ print(f"Container Datastore-Lib started! Initialization completed in {app_initia
 print("Performing startup database warm-up query...", flush=True)
 try:
     warmup_key = client.key("LatencyTest", "test-entity")
+    
+    warmup_start_timestamp = time.time()
+    warmup_start_dt = datetime.utcfromtimestamp(warmup_start_timestamp).isoformat() + "Z"
+    print(f"Warm-up DB request started! datetime: {warmup_start_dt}", flush=True)
+    
     _ = client.get(warmup_key)
+    
+    warmup_end_timestamp = time.time()
+    warmup_end_dt = datetime.utcfromtimestamp(warmup_end_timestamp).isoformat() + "Z"
+    print(f"Warm-up DB request completed! datetime: {warmup_end_dt}", flush=True)
+    
     print("Startup database warm-up query completed successfully!", flush=True)
 except Exception as e:
     print(f"Startup database warm-up query failed: {e}", flush=True)

@@ -90,8 +90,17 @@ if project_id:
             req.add_header("Content-Type", "application/json")
             req.add_header("x-goog-request-params", f"project_id={project_id}&database_id=datastore-id1")
             
+            warmup_start_timestamp = time.time()
+            warmup_start_dt = datetime.utcfromtimestamp(warmup_start_timestamp).isoformat() + "Z"
+            print(f"Warm-up DB request started! datetime: {warmup_start_dt}", flush=True)
+            
             with urllib.request.urlopen(req, timeout=5) as response:
                 _ = response.read()
+                
+                warmup_end_timestamp = time.time()
+                warmup_end_dt = datetime.utcfromtimestamp(warmup_end_timestamp).isoformat() + "Z"
+                print(f"Warm-up DB request completed! datetime: {warmup_end_dt}", flush=True)
+                
                 print("Startup database warm-up query via REST completed successfully!", flush=True)
         else:
             print("Startup database warm-up query via REST skipped: No access token.", flush=True)
