@@ -80,6 +80,15 @@ gcloud run deploy datastore-rest-service \
   --quiet
 
 echo "========================================================================="
+echo "DEPLOYING: datastore-lib-updated-service"
+echo "========================================================================="
+gcloud run deploy datastore-lib-updated-service \
+  --source=./simple-latency-test/datastore-lib-updated-app \
+  --region="$REGION" \
+  --allow-unauthenticated \
+  --quiet
+
+echo "========================================================================="
 echo "DEPLOYMENT COMPLETED SUCCESSFULLY!"
 echo "========================================================================="
 
@@ -87,13 +96,16 @@ echo "========================================================================="
 echo "Checking service URLs..."
 LIB_URL=$(gcloud run services describe datastore-lib-service --region="$REGION" --format="value(status.url)" 2>/dev/null || echo "Unknown")
 REST_URL=$(gcloud run services describe datastore-rest-service --region="$REGION" --format="value(status.url)" 2>/dev/null || echo "Unknown")
+UPDATED_LIB_URL=$(gcloud run services describe datastore-lib-updated-service --region="$REGION" --format="value(status.url)" 2>/dev/null || echo "Unknown")
 
-echo "Library Service URL: $LIB_URL"
+echo "Library Service URL (v2.23.0): $LIB_URL"
 echo "REST API Service URL: $REST_URL"
+echo "Updated Library Service URL (v2.25.0): $UPDATED_LIB_URL"
 echo ""
 echo "To run the latency comparison:"
 echo "1. Run './populate_datastore.sh' to insert the test data."
 echo "2. Perform requests to compare cold-start and warm-start latencies:"
 echo "   curl $LIB_URL"
 echo "   curl $REST_URL"
+echo "   curl $UPDATED_LIB_URL"
 echo "========================================================================="
