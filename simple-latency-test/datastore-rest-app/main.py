@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 # 1. Record the absolute start time of the Python interpreter
 app_start_time = time.time()
@@ -72,7 +73,7 @@ def app(environ, start_response):
 
         db_request_end_dt = datetime.utcfromtimestamp(db_request_end_timestamp).isoformat() + "Z"
         print(f"Container Python started! First execution datetime: {db_request_end_dt}", flush=True)
-        
+
         status_code = '500 Internal Server Error'
         response_data = {
             "status": "error",
