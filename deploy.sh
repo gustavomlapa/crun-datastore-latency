@@ -68,6 +68,8 @@ gcloud run deploy datastore-lib-service \
   --source=./simple-latency-test/datastore-lib-app \
   --region="$REGION" \
   --allow-unauthenticated \
+  --concurrency=1 \
+  --max-instances=5 \
   --quiet
 
 echo "========================================================================="
@@ -77,6 +79,8 @@ gcloud run deploy datastore-rest-service \
   --source=./simple-latency-test/datastore-rest-app \
   --region="$REGION" \
   --allow-unauthenticated \
+  --concurrency=1 \
+  --max-instances=5 \
   --quiet
 
 echo "========================================================================="
@@ -86,6 +90,8 @@ gcloud run deploy datastore-lib-updated-service \
   --source=./simple-latency-test/datastore-lib-updated-app \
   --region="$REGION" \
   --allow-unauthenticated \
+  --concurrency=1 \
+  --max-instances=5 \
   --quiet
 
 echo "========================================================================="
